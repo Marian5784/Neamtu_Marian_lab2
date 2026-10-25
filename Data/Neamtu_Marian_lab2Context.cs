@@ -9,4 +9,8 @@ public class Neamtu_Marian_lab2Context(
     public DbSet<Neamtu_Marian_lab2.Models.Publisher> Publisher { get; set; } = default!;
 
     public DbSet<Neamtu_Marian_lab2.Models.Authors> Authors { get; set; } = default!;
+
+    public DbSet<Neamtu_Marian_lab2.Models.Category> Category { get; set; } = default!;
+
+    public DbSet<Neamtu_Marian_lab2.Models.BookCategory> BookCategory { get; set; } = default!;
 }

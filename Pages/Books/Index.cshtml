@@ -1,4 +1,4 @@
-@page
+@page "/"
 @model Neamtu_Marian_lab2.Pages.Books.IndexModel
 
 @{
@@ -29,6 +29,9 @@
             <th>
                 PublisherName
             </th>
+            <th>
+                Categories
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -53,7 +56,19 @@
                     @Html.DisplayFor(modelItem => item.PublishingDate)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Publisher.PublisherName)
+                    @if (item.Publisher != null)
+                    {
+                        @item.Publisher.PublisherName
+                    }
+                </td>
+                <td>
+                    @if (item.BookCategories != null)
+                    {
+                        @string.Join(", ",
+                            item.BookCategories
+                                .Where(bc => bc.Category != null)
+                                .Select(bc => bc.Category.CategoryName))
+                    }
                 </td>
                 <td>
                     <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |

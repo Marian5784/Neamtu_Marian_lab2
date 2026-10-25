@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Neamtu_Marian_lab2.Models;
 
 namespace Neamtu_Marian_lab2.Pages.Books
 {
-    public class EditModel : PageModel
+    public class EditModel : BookCategoriesPageModel
     {
         private readonly Neamtu_Marian_lab2Context _context;
 
@@ -26,7 +25,11 @@ namespace Neamtu_Marian_lab2.Pages.Books
             }
 
             var book = await _context.Book
-                .FirstOrDefaultAsync(m => m.ID == id);
+                .Include(b => b.Publisher)
+                .Include(b => b.Authors)
+                .Include(b => b.BookCategories)
+                    .ThenInclude(bc => bc.Category)
+                .FirstOrDefaultAsync(b => b.ID == id);
 
             if (book == null)
             {
@@ -35,38 +38,67 @@ namespace Neamtu_Marian_lab2.Pages.Books
 
             Book = book;
 
+            PopulateAssignedCategoryData(_context, Book);
             LoadDropDownLists();
 
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(
+            int? id,
+            string[] selectedCategories)
         {
-            if (!ModelState.IsValid)
+            if (id == null)
             {
-                LoadDropDownLists();
-                return Page();
+                return NotFound();
             }
 
-            _context.Attach(Book).State = EntityState.Modified;
+            var bookToUpdate = await _context.Book
+                .Include(b => b.BookCategories)
+                .FirstOrDefaultAsync(b => b.ID == id);
 
-            try
+            if (bookToUpdate == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
+
+            if (await TryUpdateModelAsync<Book>(
+                bookToUpdate,
+                "Book",
+                b => b.Title,
+                b => b.Price,
+                b => b.PublishingDate,
+                b => b.PublisherID,
+                b => b.AuthorsID))
             {
-                if (!BookExists(Book.ID))
+                UpdateBookCategories(
+                    _context,
+                    selectedCategories,
+                    bookToUpdate);
+
+                try
                 {
-                    return NotFound();
+                    await _context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateConcurrencyException)
                 {
+                    if (!BookExists(bookToUpdate.ID))
+                    {
+                        return NotFound();
+                    }
+
                     throw;
                 }
+
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("./Index");
+            Book = bookToUpdate;
+
+            PopulateAssignedCategoryData(_context, Book);
+            LoadDropDownLists();
+
+            return Page();
         }
 
         private void LoadDropDownLists()
@@ -79,8 +111,8 @@ namespace Neamtu_Marian_lab2.Pages.Books
             );
 
             ViewData["AuthorsID"] = new SelectList(
-               _context.Set<Neamtu_Marian_lab2.Models.Authors>()
-               .Select(a => new
+                _context.Set<Neamtu_Marian_lab2.Models.Authors>()
+                    .Select(a => new
                     {
                         a.ID,
                         FullName = a.FirstName + " " + a.LastName

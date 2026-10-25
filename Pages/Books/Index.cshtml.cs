@@ -13,14 +13,31 @@ namespace Neamtu_Marian_lab2.Pages.Books
             _context = context;
         }
 
-        public IList<Book> Book { get; set; } = default!;
+        public IList<Book> Book { get; set; } = new List<Book>();
+
+        public BookData BookData { get; set; } = new BookData();
 
         public async Task OnGetAsync()
         {
             Book = await _context.Book
                 .Include(b => b.Publisher)
                 .Include(b => b.Authors)
+                .Include(b => b.BookCategories)
+                    .ThenInclude(bc => bc.Category)
                 .ToListAsync();
+
+            BookData = new BookData
+            {
+                Books = Book,
+
+                Categories = await _context.Category
+                    .ToListAsync(),
+
+                BookCategories = Book
+                    .Where(b => b.BookCategories != null)
+                    .SelectMany(b => b.BookCategories!)
+                    .ToList()
+            };
         }
     }
 }

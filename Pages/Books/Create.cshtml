@@ -9,6 +9,7 @@
 
 <h4>Book</h4>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
         <form method="post">
@@ -22,7 +23,8 @@
 
             <div class="form-group">
                 <label asp-for="Book.AuthorsID" class="control-label">Author</label>
-                <select asp-for="Book.AuthorsID" class="form-control" asp-items="ViewBag.AuthorsID">
+                <select asp-for="Book.AuthorsID" class="form-control"
+                        asp-items="ViewBag.AuthorsID">
                     <option value="">-- Select Author --</option>
                 </select>
                 <span asp-validation-for="Book.AuthorsID" class="text-danger"></span>
@@ -42,13 +44,32 @@
 
             <div class="form-group">
                 <label asp-for="Book.PublisherID" class="control-label">Publisher Name</label>
-                <select asp-for="Book.PublisherID" class="form-control" asp-items="ViewBag.PublisherID">
+                <select asp-for="Book.PublisherID" class="form-control"
+                        asp-items="ViewBag.PublisherID">
                     <option value="">-- Select Publisher --</option>
                 </select>
                 <span asp-validation-for="Book.PublisherID" class="text-danger"></span>
             </div>
 
             <div class="form-group">
+                <label class="control-label">Categories</label>
+
+                <div class="form-control" style="height: auto;">
+                    @foreach (var category in Model.AssignedCategoryDataList)
+                    {
+                        <div>
+                            <input type="checkbox"
+                                   name="selectedCategories"
+                                   value="@category.CategoryID"
+                                   @(category.Assigned ? "checked" : "") />
+
+                            @category.Name
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>

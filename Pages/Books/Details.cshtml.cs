@@ -26,6 +26,8 @@ namespace Neamtu_Marian_lab2.Pages.Books
             var book = await _context.Book
                 .Include(b => b.Publisher)
                 .Include(b => b.Authors)
+                .Include(b => b.BookCategories)
+                    .ThenInclude(bc => bc.Category)
                 .FirstOrDefaultAsync(m => m.ID == id);
 
             if (book == null)
